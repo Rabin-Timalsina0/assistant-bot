@@ -7,44 +7,6 @@ import re
 import spacy
 from app.rag import FAQRetriever
 
-nlp = spacy.load("en_core_web_sm")
-stopwords = nlp.Defaults.stop_words
-USER_ID = "598966519963758"
-
-def remove_stopwords(text):
-    doc = nlp(text)
-    return " ".join([token.text for token in doc if token.is_alpha and token.text.lower() not in stopwords])
-
-token_encoder = tiktoken.get_encoding("cl100k_base")
-
-def extract_order_id(text):
-    """Extracts order ID from text with context awareness"""
-    # Look for patterns that explicitly mention order ID
-    patterns = [
-        r'order\s+#?(\d+)',           # "order #123" or "order 123"
-        r'order\s+(\d+)',             # "order 123"
-        r'track\s+order\s+#?(\d+)',   # "track order #123"
-        r'track\s+order\s+(\d+)',     # "track order 123"
-        r'order\s+id\s+#?(\d+)',      # "order id #123"
-        r'order\s+id\s+(\d+)',        # "order id 123"
-        r'#(\d+)',                    # "#123" (standalone)
-        r'my\s+order\s+is\s+(\d+)',   # "my order is 123"
-        r'id\s+is\s+(\d+)',           # "id is 123"
-        r'(\d+)\s*$',                 # "123" at end of sentence
-    ]
-    
-    for pattern in patterns:
-        match = re.search(pattern, text, re.IGNORECASE)
-        if match:
-            return match.group(1)
-    
-    # If no explicit order ID pattern found, return None
-    return None
-
-
-def count_tokens(text):
-    return len(token_encoder.encode(text))
-
 def build_alias_map():
     mapping = {
         "extra extra small": "XXS", "xxs": "XXS", "extra small": "XS", "x-small": "XS", "xs": "XS",
