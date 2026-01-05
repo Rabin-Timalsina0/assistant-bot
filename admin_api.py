@@ -13,59 +13,6 @@ from sentence_transformers import SentenceTransformer
 from qdrant_client.models import Filter, FieldCondition, MatchValue, PayloadSchemaType, FilterSelector
 from app import database
 
-from dotenv import load_dotenv
-
-load_dotenv()
-QDRANT_URL = os.getenv("QDRANT_URL")
-QDRANT_API_KEY = os.getenv("QDRANT_API_KEY")
-COLLECTION_NAME = "clothes"
-
-# Initialize Qdrant client only if credentials are available
-qdrant = None
-if QDRANT_URL and QDRANT_API_KEY:
-    try:
-        qdrant = QdrantClient(
-            url=QDRANT_URL,
-            api_key=QDRANT_API_KEY,
-            timeout=60,
-            prefer_grpc=False
-        )
-        
-        # Try to create payload index (may fail if already exists)
-        try:
-            qdrant.create_payload_index(
-                collection_name=COLLECTION_NAME,
-                field_name="name",
-                field_schema=PayloadSchemaType.KEYWORD
-            )
-        except Exception as e:
-            print(f"Payload index may already exist: {e}")
-        
-        # Check and create collection if needed
-        collections = qdrant.get_collections()
-        if COLLECTION_NAME not in [c.name for c in collections.collections]:
-            print(f"Collection '{COLLECTION_NAME}' not found. Creating it...")
-            qdrant.recreate_collection(
-                collection_name=COLLECTION_NAME,
-                vectors_config=VectorParams(size=512, distance=Distance.COSINE)
-            )
-        else:
-            print(f"Collection '{COLLECTION_NAME}' already exists. Skipping creation.")
-    except Exception as e:
-        print(f"Warning: Failed to initialize Qdrant client: {e}")
-        qdrant = None
-else:
-    print("Warning: QDRANT_URL or QDRANT_API_KEY not set. Qdrant features will be unavailable.")
-
-# Initialize model (will use pre-downloaded model from build)
-MODEL_NAME = "clip-ViT-B-32"
-try:
-    model = SentenceTransformer(MODEL_NAME)
-except Exception as e:
-    print(f"Warning: Failed to load model: {e}")
-    model = None
-
-router = APIRouter(prefix="/api/{client_id}", tags=["admin"])
 
 def fetch_all(query: str, params: tuple = ()):
     conn = get_conn()
