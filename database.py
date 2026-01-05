@@ -2,25 +2,6 @@ import os
 import psycopg2
 from psycopg2 import pool
 from dotenv import load_dotenv
-# Use environment variable in production - no hardcoded fallback for security
-load_dotenv()
-DB_URL = os.getenv("DATABASE_URL")
-if not DB_URL:
-    raise ValueError("DATABASE_URL environment variable must be set")
-
-# Initialize a connection pool (min=1, max=10 connections)
-db_pool = pool.SimpleConnectionPool(1, 10, DB_URL)
-
-def get_conn():
-    """Get a connection from the pool."""
-    return db_pool.getconn()
-
-def release_conn(conn):
-    """Release the connection back to the pool."""
-    db_pool.putconn(conn)
-
-
-# ---------------- Your functions ---------------- #
 
 def get_clients(client):
     conn = get_conn()
