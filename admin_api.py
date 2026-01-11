@@ -16,15 +16,12 @@ from app import database
 
 def fetch_all(query: str, params: tuple = ()):
     conn = get_conn()
-    try:
-        cur = conn.cursor()
-        cur.execute(query, params)
-        columns = [c[0] for c in cur.description]
-        rows = [dict(zip(columns, r)) for r in cur.fetchall()]
-        cur.close()
-        return rows
-    finally:
-        release_conn(conn)
+    cur = conn.cursor()
+    cur.execute(query, params)
+    columns = [c[0] for c in cur.description]
+    rows = [dict(zip(columns, r)) for r in cur.fetchall()]
+    cur.close()
+    return rows
 
 def fetch_one(query: str, params: tuple = ()):
     rows = fetch_all(query, params)
@@ -105,10 +102,8 @@ def extract_r2_key_from_url(url: str) -> str:
     bucket = os.getenv("R2_BUCKET")
     
     if public_base and url.startswith(public_base):
-        # Custom domain URL
         return url[len(public_base.rstrip('/') + '/'):]
     elif account_id and url.startswith(f"https://{account_id}.r2.dev/{bucket}/"):
-        # R2.dev URL
         return url[len(f"https://{account_id}.r2.dev/{bucket}/"):]
     else:
         raise ValueError(f"Unable to extract key from URL: {url}")
