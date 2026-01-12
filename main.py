@@ -26,7 +26,6 @@ def get_client_config(client_id: int):
         }
     except Exception as e:
         print(f"Database error in get_client_config: {e}")
-        # Retry once
         try:
             client_info = database.get_clients(client_id)
             if not client_info:
@@ -41,7 +40,6 @@ def get_client_config(client_id: int):
             print(f"Database retry failed in get_client_config: {retry_error}")
             raise HTTPException(status_code=503, detail="Database connection error")
 
-# Image embedding removed - image search disabled (like chatbot_NoImage)
 
 def get_openai_client(api_key: str):
     return OpenAI(api_key=api_key)
