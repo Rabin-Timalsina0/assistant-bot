@@ -53,7 +53,7 @@ def intent_classifier(client: OpenAI, user_input: str, previous_bot_message: str
     messages.append({"role": "user", "content": user_input})
 
     response = client.chat.completions.create(
-        model="gpt-4o-mini",  # Fixed: valid OpenAI model
+        model="gpt-4o-mini",  # Fixed: valid OpenAI model or usable 4.1 nano cheaper model
         messages=messages,
     )
     return response.choices[0].message.content
@@ -164,7 +164,6 @@ async def get_message(client_id: str, request: Request):
                             return {"status": "success"}
 
     try:
-        # Skip processing if no text message (e.g., read receipts, echo messages)
         if user_text is None:
             return {"status": "success"}
         
@@ -180,29 +179,7 @@ async def get_message(client_id: str, request: Request):
         intent = None
         args = {}
 
-        # ... (rest of pending action logic) ...
-
-        # Natural Conversation Logic:
-        # Check if the user input satisfies the pending action.
-        # If yes, set intent and skip_intent = True.
-        # If no (e.g. it's a question), let it fall through to intent_classifier.
-
         if pending_action == "need_command":
-            # For need_command, we assume any input is the command unless it looks like something else?
-            # Actually, need_command usually comes from "start_order" or similar where we expect a product name.
-            # Let's try to normalize it as a product.
-            # If it's a product, good. If not, maybe it's a question.
-            # But wait, need_command logic in original code was:
-            # intent = "item_inquiry", args = {"product_name": current_state["product_name"]}
-            # It seems it was auto-triggering item_inquiry with a stored product name?
-            # Ah, looking at original code:
-            # if current_state.get("state") == "need_command":
-            #     intent = "item_inquiry"
-            #     args = {"product_name": current_state["product_name"]}
-            #     skip_intent = True
-            #     del helper_funcs.user_states...
-            # This looks like it was handling a state where we already knew the product but needed to trigger inquiry?
-            # Let's keep it as is for now but use new state manager.
             
             intent = "item_inquiry"
             args = {"product_name": pending_data.get("product_name")}
